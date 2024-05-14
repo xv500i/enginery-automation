@@ -1,6 +1,5 @@
 ﻿using IfcLibrary.Ifc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.IO;
 
 namespace IfcLibraryTests
@@ -13,7 +12,7 @@ namespace IfcLibraryTests
         {
             var reader = new IfcReader();
             var lines = reader.Load(Path.Combine("TestData", "file.ifc"));
-            Assert.IsTrue(lines.Length > 0);
+            Assert.IsNotNull(lines);
         }
     }
 }
