@@ -11,7 +11,7 @@ namespace IfcLibraryTests
         public void CanReadRaw()
         {
             var reader = new IfcReader();
-            var lines = reader.Load(Path.Combine("TestData", "file.ifc"));
+            var lines = reader.Load(Path.Combine("TestData", "simple.ifc"));
             Assert.IsNotNull(lines);
         }
     }

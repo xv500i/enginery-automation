@@ -2,6 +2,7 @@
 using System.IO;
 using Xbim.Ifc;
 using Xbim.Ifc4.Interfaces;
+using Xbim.Ifc4.Kernel;
 
 namespace IfcLibrary.Ifc
 {
@@ -23,7 +24,7 @@ namespace IfcLibrary.Ifc
 
             using (var model = IfcStore.Open(path, editor))
             {
-                foreach(var instance in model.Instances)
+                foreach(var instance in model.Instances.OfType<IfcPropertySet>())
                 {
                     Console.WriteLine($"hola");
                 }

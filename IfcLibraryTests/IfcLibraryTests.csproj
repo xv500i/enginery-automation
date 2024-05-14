@@ -57,6 +57,9 @@
     <None Include="TestData\file.ifc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\simple.ifc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IfcLibrary\IfcLibrary.csproj">
