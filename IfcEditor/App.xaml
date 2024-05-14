@@ -1,7 +1,7 @@
-﻿<Application x:Class="EngineryAutomationDesktop.App"
+﻿<Application x:Class="IfcEditor.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:EngineryAutomationDesktop"
+             xmlns:local="clr-namespace:IfcEditor"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
