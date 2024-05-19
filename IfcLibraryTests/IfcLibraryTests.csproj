@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExcelReaderTests.cs" />
+    <Compile Include="IFCFileIds.cs" />
     <Compile Include="IfcReaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

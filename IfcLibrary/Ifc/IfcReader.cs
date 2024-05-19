@@ -1,13 +1,94 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xbim.Ifc;
 using Xbim.Ifc4.Interfaces;
 using Xbim.Ifc4.Kernel;
+using Xbim.Ifc4.MeasureResource;
 
 namespace IfcLibrary.Ifc
 {
     public class IfcReader
     {
+        public List<string> GetPropertySetIds(string path)
+        {
+            var editor = new XbimEditorCredentials
+            {
+                ApplicationDevelopersName = "You",
+                ApplicationFullName = "Your app",
+                ApplicationIdentifier = "Your app ID",
+                ApplicationVersion = "4.0",
+                //your user
+                EditorsFamilyName = "Santini Aichel",
+                EditorsGivenName = "Johann Blasius",
+                EditorsOrganisationName = "Independent Architecture"
+            };
+
+            var ids = new List<string>();
+
+            using (var model = IfcStore.Open(path, editor))
+            {
+                foreach (var instance in model.Instances.OfType<IfcPropertySet>())
+                {
+                    ids.Add(instance.GlobalId);
+                }
+            }
+
+            return ids;
+        }
+
+        public void PatchFile(string originalPath, string patchedPath, IEnumerable<IFCUpdate> updates)
+        {
+            var editor = new XbimEditorCredentials
+            {
+                ApplicationDevelopersName = "You",
+                ApplicationFullName = "Your app",
+                ApplicationIdentifier = "Your app ID",
+                ApplicationVersion = "4.0",
+                //your user
+                EditorsFamilyName = "Santini Aichel",
+                EditorsGivenName = "Johann Blasius",
+                EditorsOrganisationName = "Independent Architecture"
+            };
+
+            var ids = new List<string>();
+
+            using (var model = IfcStore.Open(originalPath, editor))
+            {
+                var transaction = model.BeginTransaction();
+                foreach(var update in updates)
+                {
+                    foreach(var propertySet in model.Instances.OfType<IfcPropertySet>())
+                    {
+                        if(propertySet.Name == update.PropertySetName)
+                        {
+                            var property = propertySet.HasProperties.FirstOrDefault(x => x.Name == update.PropertyName);
+                            if (property != null) 
+                            {
+                                // TODO: implement all possible property types
+                                if (property is Xbim.Ifc4.PropertyResource.IfcPropertySingleValue v)
+                                {
+                                    var type = v.NominalValue.UnderlyingSystemType;
+                                    // TODO: respect type
+                                    if (type == typeof(string))
+                                    {
+                                        v.NominalValue = new IfcText(update.NewValue);
+                                    } else
+                                    {
+                                        v.NominalValue = new IfcLengthMeasure(update.NewValue);
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                }
+                transaction.Commit();
+                model.SaveAs(patchedPath);
+            }
+        }
+
         public object Load(string path)
         {
             var editor = new XbimEditorCredentials

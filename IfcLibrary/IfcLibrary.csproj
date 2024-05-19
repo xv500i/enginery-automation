@@ -85,8 +85,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Excel\ExcelReader.cs" />
+    <Compile Include="IFCAdd.cs" />
     <Compile Include="Ifc\IfcDocument.cs" />
     <Compile Include="Ifc\IfcReader.cs" />
+    <Compile Include="IFCUpdate.cs" />
     <Compile Include="Ifc\IIfcReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
