@@ -41,19 +41,30 @@ namespace IfcLibraryTests
                     {
                         PropertySetName = "Basic set of properties",
                         PropertyName = "Length property",
-                        NewValue = "57."
+                        NewValue = "57.",
                     },
                     new IFCUpdate
                     {
                         PropertySetName = "Basic set of properties",
                         PropertyName = "Text property",
-                        NewValue = "Change"
+                        NewValue = "Change",
+                    }
+                },
+                new List<IFCAdd>()
+                {
+                    new IFCAdd
+                    {
+                        PropertySetName = "Basic set of properties",
+                        NewPropertyName = "MyProp",
+                        NewValue = "Abc",
                     }
                 });
             var contents = File.ReadAllLines(Path.Combine("TestData", "simple_patched.ifc"));
             
             Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCLENGTHMEASURE(57.)")));
             Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('Change')")));
+            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('Abc')")));
+            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("MyProp")));
         }
     }
 }

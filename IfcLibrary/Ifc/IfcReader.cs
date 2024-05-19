@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Xbim.Ifc;
 using Xbim.Ifc4.Interfaces;
 using Xbim.Ifc4.Kernel;
 using Xbim.Ifc4.MeasureResource;
+using Xbim.Ifc4.PropertyResource;
 
 namespace IfcLibrary.Ifc
 {
@@ -38,7 +37,7 @@ namespace IfcLibrary.Ifc
             return ids;
         }
 
-        public void PatchFile(string originalPath, string patchedPath, IEnumerable<IFCUpdate> updates)
+        public void PatchFile(string originalPath, string patchedPath, IEnumerable<IFCUpdate> updates, IEnumerable<IFCAdd> adds)
         {
             var editor = new XbimEditorCredentials
             {
@@ -61,6 +60,7 @@ namespace IfcLibrary.Ifc
                 {
                     foreach(var propertySet in model.Instances.OfType<IfcPropertySet>())
                     {
+                        // What if does not exist
                         if(propertySet.Name == update.PropertySetName)
                         {
                             var property = propertySet.HasProperties.FirstOrDefault(x => x.Name == update.PropertyName);
@@ -81,6 +81,23 @@ namespace IfcLibrary.Ifc
 
                                 }
                             }
+                        }
+                    }
+                }
+
+                foreach (var add in adds)
+                {
+                    foreach (var propertySet in model.Instances.OfType<IfcPropertySet>())
+                    {
+                        // What if does not exist
+                        if (propertySet.Name == add.PropertySetName)
+                        {
+                            propertySet.HasProperties.Add(model.Instances.New<IfcPropertySingleValue>(p =>
+                            {
+                                p.Name = add.NewPropertyName;
+                                // TODO: support types
+                                p.NominalValue = new IfcText(add.NewValue);
+                            }));
                         }
                     }
                 }
