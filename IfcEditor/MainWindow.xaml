@@ -3,10 +3,51 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:IfcEditor"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Window.Resources>
+        <Style TargetType="GroupBox" x:Key="GroupBoxStyle">
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontWeight="Bold" />
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <StackPanel>
+        <GroupBox Header="Selecciona el fichero IFC" Style="{StaticResource GroupBoxStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Editar" />
+                    <TextBox IsReadOnly="True">C:\Usuarios\doejhon\casa.ifc</TextBox>
+                </StackPanel>
+        </GroupBox>
         
-    </Grid>
+        <GroupBox Header="Selecciona el fichero excel" Style="{StaticResource GroupBoxStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Editar" />
+                    <TextBox IsReadOnly="True">C:\Usuarios\doejhon\cambios.xlsx</TextBox>
+                </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="Vista previa de los cambios" Style="{StaticResource GroupBoxStyle}">
+            <TextBlock TextWrapping="Wrap">
+Cambiar el valor a "58" de la Property "Text property" de la PropertySet "Basic set of properties"<LineBreak/>
+Añadir la Property "Text property" con valor "Ejemplo" a la PropertySet "Basic set of properties"
+            </TextBlock>
+        </GroupBox>
+
+        <GroupBox Header="Selecciona donde guardar el fichero IFC modificado" Style="{StaticResource GroupBoxStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Editar" />
+                    <TextBox IsReadOnly="True">C:\Usuarios\doejhon\casa_cambiado.ifc</TextBox>
+                </StackPanel>
+        </GroupBox>
+
+        <Button Margin="5" Content="Aplicar cambios" HorizontalAlignment="Right" Width="auto" />
+
+    </StackPanel>
 </Window>
