@@ -25,19 +25,12 @@
                     <TextBox IsReadOnly="True">C:\Usuarios\doejhon\casa.ifc</TextBox>
                 </StackPanel>
         </GroupBox>
-        
-        <GroupBox Header="Selecciona el fichero excel" Style="{StaticResource GroupBoxStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Editar" />
-                    <TextBox IsReadOnly="True">C:\Usuarios\doejhon\cambios.xlsx</TextBox>
-                </StackPanel>
-        </GroupBox>
 
-        <GroupBox Header="Vista previa de los cambios" Style="{StaticResource GroupBoxStyle}">
-            <TextBlock TextWrapping="Wrap">
-Cambiar el valor a "58" de la Property "Text property" de la PropertySet "Basic set of properties"<LineBreak/>
-Añadir la Property "Text property" con valor "Ejemplo" a la PropertySet "Basic set of properties"
-            </TextBlock>
+        <GroupBox Header="Selecciona el fichero excel" Style="{StaticResource GroupBoxStyle}">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Editar" />
+                <TextBox IsReadOnly="True">C:\Usuarios\doejhon\cambios.xlsx</TextBox>
+            </StackPanel>
         </GroupBox>
 
         <GroupBox Header="Selecciona donde guardar el fichero IFC modificado" Style="{StaticResource GroupBoxStyle}">
