@@ -6,6 +6,9 @@
 		<None Update="TestData\file.ifc">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="TestData\ICR_IFC4_PB_Mep.ifc">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="TestData\Libro1.xlsx">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

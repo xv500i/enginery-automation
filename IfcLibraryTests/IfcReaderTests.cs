@@ -66,5 +66,29 @@ namespace IfcLibraryTests
             Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('Abc')")));
             Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("MyProp")));
         }
+
+        [TestMethod]
+        public void CanPatchWithBigFilePropertyGroup()
+        {
+            var reader = new IfcReader();
+            reader.PatchFile(
+                Path.Combine("TestData", "ICR_IFC4_PB_Mep.ifc"),
+                Path.Combine("TestData", "ICR_IFC4_PB_Mep_patched.ifc"),
+                new List<IFCUpdate>()
+                {
+                },
+                new List<IFCAdd>()
+                {
+                    new IFCAdd
+                    {
+                        PropertySetName = "ICAT-Identificacio",
+                        NewPropertyName = "Aleix",
+                        NewValue = "Cuello",
+                    }
+                });
+            var contents = File.ReadAllLines(Path.Combine("TestData", "ICR_IFC4_PB_Mep_patched.ifc"));
+
+            Assert.IsNotNull(contents);
+        }
     }
 }
