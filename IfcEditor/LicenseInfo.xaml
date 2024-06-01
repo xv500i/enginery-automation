@@ -1,0 +1,30 @@
+﻿<Window x:Class="IfcEditor.LicenseInfo"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:IfcEditor"
+        mc:Ignorable="d"
+        Title="LicenseInfo" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0">
+            Este software usa XBIM y ExcelDataReader. El código de esta aplicación esta disponible en <Hyperlink NavigateUri="https://github.com/xv500i/enginery-automation">https://github.com/xv500i/enginery-automation</Hyperlink>
+        </TextBlock>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Licencia XBIM" IsSelected="True">
+                <ScrollViewer>
+                    <TextBlock TextWrapping="Wrap" Text="{x:Static local:LicensesText.XBIMLicense}"/>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Licencia ExcelDataReader">
+                <ScrollViewer>
+                    <TextBlock TextWrapping="Wrap" Text="{x:Static local:LicensesText.ExcelDataReader}"/>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

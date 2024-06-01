@@ -1,15 +1,12 @@
 ﻿using ExcelDataReader;
-using System;
+using IfcLibrary.Ifc;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IfcLibrary.Excel
 {
-    public class ExcelReader
+    public class ExcelReader : IExcelReader
     {
         public List<List<string>> GetCells(string path)
         {
@@ -22,7 +19,7 @@ namespace IfcLibrary.Excel
 
                     var firstSheet = result.Tables[0];
 
-                    foreach (DataRow row in firstSheet.Rows) 
+                    foreach (DataRow row in firstSheet.Rows)
                     {
                         var rowAsList = new List<string>();
                         foreach (DataColumn column in firstSheet.Columns)
@@ -34,6 +31,11 @@ namespace IfcLibrary.Excel
                 }
             }
             return results;
+        }
+
+        public AutomatedChanges GetAutomatedChanges(string path)
+        {
+            return null;
         }
     }
 }

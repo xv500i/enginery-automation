@@ -1,6 +1,6 @@
-﻿namespace IfcLibrary
+﻿namespace IfcLibrary.Ifc
 {
-    public class IFCAdd
+    public class AddPropertySetWithPropertyAndValue
     {
         public string PropertySetName { get; set; }
         public string NewPropertyName { get; set; }

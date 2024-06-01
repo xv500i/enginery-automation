@@ -1,6 +1,6 @@
-﻿namespace IfcLibrary
+﻿namespace IfcLibrary.Ifc
 {
-    public class IFCUpdate
+    public class UpdatePropertySetByValue
     {
         public string PropertySetName { get; set; }
         public string PropertyName { get; set; }

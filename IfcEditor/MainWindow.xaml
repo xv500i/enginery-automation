@@ -19,6 +19,11 @@
         </Style>
     </Window.Resources>
     <StackPanel>
+        <Menu>
+            <MenuItem Header="Ayuda">
+                <MenuItem Header="Acerca de Enginery IFC Automation" Click="AboutClick"/>
+            </MenuItem>
+        </Menu>
         <GroupBox Header="Selecciona el fichero IFC" Style="{StaticResource GroupBoxStyle}">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="Editar" />
