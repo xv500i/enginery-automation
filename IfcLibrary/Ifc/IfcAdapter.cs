@@ -47,7 +47,7 @@ namespace IfcLibrary.Ifc
                     foreach (var propertySet in model.Instances.OfType<IfcPropertySet>())
                     {
                         // What if does not exist
-                        if (propertySet.Name == add.PropertySetName)
+                        if (propertySet.Name == add.NewPropertySetName)
                         {
                             propertySet.HasProperties.Add(model.Instances.New<IfcPropertySingleValue>(p =>
                             {

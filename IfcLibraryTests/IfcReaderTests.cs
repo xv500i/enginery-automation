@@ -33,7 +33,7 @@ namespace IfcLibraryTests
             automatedChanges.AddPropertySetWithPropertyAndValues.Add(
                 new AddPropertySetWithPropertyAndValue
                 {
-                    PropertySetName = "Basic set of properties",
+                    NewPropertySetName = "Basic set of properties",
                     NewPropertyName = "MyProp",
                     NewValue = "Abc",
                 });
@@ -60,7 +60,7 @@ namespace IfcLibraryTests
             automatedChanges.AddPropertySetWithPropertyAndValues.Add(
                 new AddPropertySetWithPropertyAndValue
                 {
-                    PropertySetName = "ICAT-Identificacio",
+                    NewPropertySetName = "ICAT-Identificacio",
                     NewPropertyName = "Abc",
                     NewValue = "Def",
                 });
