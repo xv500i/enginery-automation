@@ -4,11 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 
 namespace IfcLibrary.Excel
 {
     public class ExcelReader : IExcelReader
     {
+        private const string AddPropertySetHeaderValue = "Property set Nuevo ";
+        private const string UpdatePropertySetHeaderValue = "Property set a cambiar";
+
         public List<List<string>> GetCells(string path)
         {
             var results = new List<List<string>>();
@@ -54,9 +58,9 @@ namespace IfcLibrary.Excel
             return result;
         }
 
-        private IEnumerable<AddPropertySetWithRelativePropertyAndValue> ParseAddPropertySetByRelativeValue(List<List<string>> cells)
+        private List<AddPropertySetWithRelativePropertyAndValue> ParseAddPropertySetByRelativeValue(List<List<string>> cells)
         {
-            var addNewPropertySetNameHeader = FindHeaderFor("Property set Nuevo ", cells);
+            var addNewPropertySetNameHeader = FindHeaderFor(AddPropertySetHeaderValue, cells);
             var addNewPropertyNameHeader = new CellIndex
             {
                 Row = addNewPropertySetNameHeader.Row,
@@ -73,34 +77,27 @@ namespace IfcLibrary.Excel
                 Column = addRelativePropertySetNameHeader.Column + 1,
             };
 
-            var result = new List<AddPropertySetWithRelativePropertyAndValue>();
-            for (int row = addNewPropertySetNameHeader.Row + 1; row < cells.Count; row++)
+            var headers = new List<CellIndex>
             {
-                var copyFromPropertyName = cells[row][addRelativePropertyNameHeader.Column];
-                var newPropertyName = cells[row][addNewPropertyNameHeader.Column];
-                var newPropertySetName = cells[row][addNewPropertySetNameHeader.Column];
-                var copyFromPropertySetName = cells[row][addRelativePropertySetNameHeader.Column];
-
-                if (!string.IsNullOrEmpty(copyFromPropertyName)
-                    && !string.IsNullOrEmpty(newPropertyName)
-                    && !string.IsNullOrEmpty(newPropertySetName))
+                addNewPropertySetNameHeader,
+                addNewPropertyNameHeader,
+                addRelativePropertySetNameHeader,
+                addRelativePropertyNameHeader,
+            };
+            return ParseRows(cells, headers, (dictionary) =>
+                new AddPropertySetWithRelativePropertyAndValue
                 {
-                    result.Add(new AddPropertySetWithRelativePropertyAndValue
-                    {
-                        CopyFromPropertyName = copyFromPropertyName,
-                        NewPropertyName = newPropertyName,
-                        NewPropertySetName = newPropertySetName,
-                        CopyFromPropertySetName = copyFromPropertySetName,
-                    });
+                    CopyFromPropertyName = dictionary[addRelativePropertyNameHeader],
+                    NewPropertyName = dictionary[addNewPropertyNameHeader],
+                    NewPropertySetName = dictionary[addNewPropertySetNameHeader],
+                    CopyFromPropertySetName = dictionary[addRelativePropertySetNameHeader],
                 }
-            }
-
-            return result;
+            );
         }
 
-        private IEnumerable<AddPropertySetWithPropertyAndValue> ParseAddPropertySetByValue(List<List<string>> cells)
+        private List<AddPropertySetWithPropertyAndValue> ParseAddPropertySetByValue(List<List<string>> cells)
         {
-            var addNewPropertySetNameHeader = FindHeaderFor("Property set Nuevo ", cells);
+            var addNewPropertySetNameHeader = FindHeaderFor(AddPropertySetHeaderValue, cells);
             var addNewPropertyNameHeader = new CellIndex
             {
                 Row = addNewPropertySetNameHeader.Row,
@@ -112,32 +109,25 @@ namespace IfcLibrary.Excel
                 Column = addNewPropertyNameHeader.Column + 3,
             };
 
-            var result = new List<AddPropertySetWithPropertyAndValue>();
-            for (int row = addNewPropertySetNameHeader.Row + 1; row < cells.Count; row++)
+            var headers = new List<CellIndex>
             {
-                var newValue = cells[row][addNewValueHeader.Column];
-                var newPropertyName = cells[row][addNewPropertyNameHeader.Column];
-                var newPropertySetName = cells[row][addNewPropertySetNameHeader.Column];
-
-                if (!string.IsNullOrEmpty(newValue)
-                    && !string.IsNullOrEmpty(newPropertyName)
-                    && !string.IsNullOrEmpty(newPropertySetName))
+                addNewPropertySetNameHeader,
+                addNewPropertyNameHeader,
+                addNewValueHeader,
+            };
+            return ParseRows(cells, headers, (dictionary) =>
+                new AddPropertySetWithPropertyAndValue
                 {
-                    result.Add(new AddPropertySetWithPropertyAndValue
-                    {
-                        NewValue = newValue,
-                        NewPropertyName = newPropertyName,
-                        NewPropertySetName = newPropertySetName,
-                    });
+                    NewValue = dictionary[addNewValueHeader],
+                    NewPropertyName = dictionary[addNewPropertyNameHeader],
+                    NewPropertySetName = dictionary[addNewPropertySetNameHeader],
                 }
-            }
-
-            return result;
+            );
         }
 
         private List<UpdatePropertySetByValue> ParseUpdatePropertySetByValue(List<List<string>> cells)
         {
-            var updatePropertySetHeader = FindHeaderFor("Property set a cambiar", cells);
+            var updatePropertySetHeader = FindHeaderFor(UpdatePropertySetHeaderValue, cells);
             var updateNewPropertyNameHeader = new CellIndex
             {
                 Row = updatePropertySetHeader.Row,
@@ -149,26 +139,38 @@ namespace IfcLibrary.Excel
                 Column = updateNewPropertyNameHeader.Column + 1,
             };
 
-            var result = new List<UpdatePropertySetByValue>();
-            for (int row = updatePropertySetHeader.Row + 1; row < cells.Count; row++)
+            var headers = new List<CellIndex>
             {
-                var newValue = cells[row][updateNewPropertyValueHeader.Column];
-                var propertyName = cells[row][updateNewPropertyNameHeader.Column];
-                var propertySetName = cells[row][updatePropertySetHeader.Column];
-
-                if (!string.IsNullOrEmpty(newValue)
-                    && !string.IsNullOrEmpty(propertyName)
-                    && !string.IsNullOrEmpty(propertySetName))
+                updatePropertySetHeader,
+                updateNewPropertyNameHeader,
+                updateNewPropertyValueHeader,
+            };
+            return ParseRows(cells, headers, (dictionary) =>
+                new UpdatePropertySetByValue
                 {
-                    result.Add(new UpdatePropertySetByValue
-                    {
-                        NewValue = newValue,
-                        PropertyName = propertyName,
-                        PropertySetName = propertySetName,
-                    });
+                    NewValue = dictionary[updateNewPropertyValueHeader],
+                    PropertyName = dictionary[updateNewPropertyNameHeader],
+                    PropertySetName = dictionary[updatePropertySetHeader],
+                }
+            );
+        }
+
+        private List<T> ParseRows<T>(List<List<string>> cells, List<CellIndex> headers, Func<Dictionary<CellIndex, string>, T> buildDomainObjectFunc)
+        {
+            var result = new List<T>();
+            for (int row = headers.First().Row + 1; row < cells.Count; row++)
+            {
+                var rowValues = new Dictionary<CellIndex, string>();
+                foreach (var header in headers)
+                {
+                    rowValues[header] = cells[row][header.Column];
+                }
+
+                if (rowValues.Values.All(x => !string.IsNullOrWhiteSpace(x)))
+                {
+                    result.Add(buildDomainObjectFunc(rowValues));
                 }
             }
-
             return result;
         }
 
@@ -191,39 +193,6 @@ namespace IfcLibrary.Excel
             }
 
             return null;
-        }
-
-        private List<CellIndex> FindTables(List<List<string>> cells)
-        {
-            var result = new List<CellIndex>();
-            for (int row = 0; row < cells.Count; row++)
-            {
-                for (int column = 0; column < cells[row].Count; column++)
-                {
-                    var currentCell = cells[row][column];
-                    var isStartOfTable = IsCellStartOfTable(cells, currentCell, row, column);
-                    if (isStartOfTable)
-                    {
-                        result.Add(new CellIndex
-                        {
-                            Column = column,
-                            Row = row,
-                        });
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        private static bool IsCellStartOfTable(List<List<string>> cells, string currentCell, int row, int column)
-        {
-            if (string.IsNullOrWhiteSpace(currentCell))
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }
