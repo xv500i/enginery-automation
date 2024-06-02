@@ -13,7 +13,7 @@ namespace IfcLibrary.Excel
         private const string AddPropertySetHeaderValue = "Property set Nuevo ";
         private const string UpdatePropertySetHeaderValue = "Property set a cambiar";
 
-        public List<List<string>> GetCells(string path)
+        private List<List<string>> GetCells(string path)
         {
             var results = new List<List<string>>();
             using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))

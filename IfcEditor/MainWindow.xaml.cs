@@ -1,6 +1,6 @@
-﻿using ExcelDataReader.Log;
+﻿using IfcLibrary.Excel;
+using IfcLibrary.Ifc;
 using Microsoft.Win32;
-using System;
 using System.IO;
 using System.Windows;
 
@@ -90,8 +90,12 @@ namespace IfcEditor
 
             try
             {
-                // Do the thing
-                //throw new NotImplementedException();
+                var excelReader = new ExcelReader();
+                var automatedChanges = excelReader.GetAutomatedChanges(this.ExcelFileTextBox.Text);
+                
+                var ifcAdapter = new IfcAdapter();
+                ifcAdapter.PatchFile(this.IFCFileTextBox.Text, this.OutputFileTextBox.Text, automatedChanges);
+
                 MessageBox.Show($"Fichero modificado guardado en {this.OutputFileTextBox.Text}", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (System.Exception exception)

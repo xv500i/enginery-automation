@@ -10,14 +10,6 @@ namespace IfcLibraryTests
     public class ExcelReaderTests
     {
         [TestMethod]
-        public void CanReadExcel()
-        {
-            var reader = new ExcelReader();
-            var cells = reader.GetCells(Path.Combine("TestData", "Libro1.xlsx"));
-            Assert.IsNotNull(cells);
-        }
-
-        [TestMethod]
         public void CanReadUpdatePropertySetByValues()
         {
             var reader = new ExcelReader();
