@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Enginery IFC Automation" Height="450" Width="800">
+        Title="Enginery IFC Automation" Height="450" Width="800" MinHeight="400" MinWidth="400">
     <Window.Resources>
         <Style TargetType="GroupBox" x:Key="GroupBoxStyle">
             <Setter Property="Margin" Value="5" />
@@ -25,27 +25,27 @@
             </MenuItem>
         </Menu>
         <GroupBox Header="Selecciona el fichero IFC" Style="{StaticResource GroupBoxStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Editar" />
-                    <TextBox IsReadOnly="True">C:\Usuarios\doejhon\casa.ifc</TextBox>
-                </StackPanel>
+                <DockPanel>
+                    <Button DockPanel.Dock="Left" Content="Editar" Click="IFCButtonClick"/>
+                    <TextBox Name="IFCFileTextBox" IsReadOnly="True"></TextBox>
+                </DockPanel>
         </GroupBox>
 
         <GroupBox Header="Selecciona el fichero excel" Style="{StaticResource GroupBoxStyle}">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="Editar" />
-                <TextBox IsReadOnly="True">C:\Usuarios\doejhon\cambios.xlsx</TextBox>
-            </StackPanel>
+            <DockPanel>
+                <Button DockPanel.Dock="Left" Content="Editar" Click="ExcelButtonClick"/>
+                <TextBox Name="ExcelFileTextBox" IsReadOnly="True"></TextBox>
+            </DockPanel>
         </GroupBox>
 
         <GroupBox Header="Selecciona donde guardar el fichero IFC modificado" Style="{StaticResource GroupBoxStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Editar" />
-                    <TextBox IsReadOnly="True">C:\Usuarios\doejhon\casa_cambiado.ifc</TextBox>
-                </StackPanel>
+            <DockPanel>
+                <Button DockPanel.Dock="Left"  Content="Editar" Click="OutputButtonClick"/>
+                <TextBox Name="OutputFileTextBox" IsReadOnly="True"></TextBox>
+            </DockPanel>
         </GroupBox>
 
-        <Button Margin="5" Content="Aplicar cambios" HorizontalAlignment="Right" Width="auto" />
+        <Button Margin="5" Content="Aplicar cambios" Click="PatchButtonClick" HorizontalAlignment="Right" Width="auto" />
 
     </StackPanel>
 </Window>
