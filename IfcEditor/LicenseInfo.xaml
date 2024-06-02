@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IfcEditor"
         mc:Ignorable="d"
-        Title="LicenseInfo" Height="450" Width="800">
-    <Grid>
+        Title="Información de licencias" Height="450" Width="800">
+    <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
