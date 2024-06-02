@@ -1,4 +1,5 @@
-﻿using Xbim.Ifc;
+﻿using IfcLibrary.Domain;
+using Xbim.Ifc;
 using Xbim.Ifc4.Kernel;
 using Xbim.Ifc4.MeasureResource;
 using Xbim.Ifc4.PropertyResource;

@@ -1,4 +1,4 @@
-﻿namespace IfcLibrary.Ifc
+﻿namespace IfcLibrary.Domain
 {
     public class AddPropertySetWithRelativePropertyAndValue
     {

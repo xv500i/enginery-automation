@@ -1,4 +1,6 @@
-﻿namespace IfcLibrary.Ifc
+﻿using IfcLibrary.Domain;
+
+namespace IfcLibrary.Ifc
 {
     public interface IIfcAdapter
     {

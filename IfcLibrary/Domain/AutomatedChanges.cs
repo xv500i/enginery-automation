@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace IfcLibrary.Ifc
+namespace IfcLibrary.Domain
 {
     public class AutomatedChanges
     {

@@ -1,4 +1,4 @@
-﻿using IfcLibrary.Ifc;
+﻿using IfcLibrary.Domain;
 
 namespace IfcLibrary.Excel
 {

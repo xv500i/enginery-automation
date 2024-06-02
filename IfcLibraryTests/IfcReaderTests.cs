@@ -1,6 +1,6 @@
-﻿using IfcLibrary.Ifc;
+﻿using IfcLibrary.Domain;
+using IfcLibrary.Ifc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
