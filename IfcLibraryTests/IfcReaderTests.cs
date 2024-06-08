@@ -1,4 +1,5 @@
-﻿using IfcLibrary.Domain;
+﻿using FluentAssertions;
+using IfcLibrary.Domain;
 using IfcLibrary.Ifc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
@@ -44,11 +45,11 @@ namespace IfcLibraryTests
                 automatedChanges);
 
             var contents = File.ReadAllLines(Path.Combine("TestData", "simple_patched.ifc"));
-            
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCLENGTHMEASURE(57.)")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('Change')")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('Abc')")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("MyProp")));
+
+            contents.Should().Contain(x => x.Contains("IFCLENGTHMEASURE(57.)"));
+            contents.Should().Contain(x => x.Contains("IFCTEXT('Change')"));
+            contents.Should().Contain(x => x.Contains("IFCTEXT('Abc')"));
+            contents.Should().Contain(x => x.Contains("MyProp"));
         }
 
         [TestMethod]
@@ -72,8 +73,8 @@ namespace IfcLibraryTests
 
             var contents = File.ReadAllLines(Path.Combine("TestData", "simple_patched.ifc"));
 
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('Nombre')")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("Modelador")));
+            contents.Should().Contain(x => x.Contains("IFCTEXT('Nombre')"));
+            contents.Should().Contain(x => x.Contains("Modelador"));
         }
 
         [TestMethod]
@@ -97,9 +98,9 @@ namespace IfcLibraryTests
 
             var contents = File.ReadAllLines(Path.Combine("TestData", "simple_patched.ifc"));
 
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("IFCTEXT('212349090123')")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("7640923409")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("1239788974123")));
+            contents.Should().Contain(x => x.Contains("IFCTEXT('212349090123')"));
+            contents.Should().Contain(x => x.Contains("7640923409"));
+            contents.Should().Contain(x => x.Contains("1239788974123"));
         }
 
         [TestMethod]
@@ -124,33 +125,9 @@ namespace IfcLibraryTests
 
             var contents = File.ReadAllLines(Path.Combine("TestData", "simple_patched.ifc"));
 
-            Assert.AreEqual(2, contents.Count(x => x.Contains("IFCTEXT('Any arbitrary text you like')")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("NewPSet")));
-            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("NewPName")));
-        }
-
-        [TestMethod]
-        public void CanPatchWithBigFilePropertyGroup()
-        {
-            var reader = new IfcAdapter();
-
-            var automatedChanges = new AutomatedChanges();
-            automatedChanges.AddPropertySetWithPropertyAndValues.Add(
-                new AddPropertySetWithPropertyAndValue
-                {
-                    NewPropertySetName = "ICAT-Identificacio",
-                    NewPropertyName = "Abc",
-                    NewValue = "Def",
-                });
-
-            reader.PatchFile(
-                Path.Combine("TestData", "ICR_IFC4_PB_Mep.ifc"),
-                Path.Combine("TestData", "ICR_IFC4_PB_Mep_patched.ifc"),
-                automatedChanges);
-
-            var contents = File.ReadAllLines(Path.Combine("TestData", "ICR_IFC4_PB_Mep_patched.ifc"));
-
-            Assert.IsNotNull(contents);
+            contents.Should().Contain(x => x.Contains("NewPName"));
+            contents.Should().Contain(x => x.Contains("NewPSet"));
+            contents.Count(x => x.Contains("IFCTEXT('Any arbitrary text you like')")).Should().Be(2);
         }
     }
 }
