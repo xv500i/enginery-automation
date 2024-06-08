@@ -103,6 +103,33 @@ namespace IfcLibraryTests
         }
 
         [TestMethod]
+        public void AddPropertySetWithRelativePropertyAndValue_PropertySetDoesNotExist_CreatesThePropertyInThePropertySet()
+        {
+            var reader = new IfcAdapter();
+
+            var automatedChanges = new AutomatedChanges();
+            automatedChanges.AddPropertySetWithRelativePropertyAndValues.Add(
+                new AddPropertySetWithRelativePropertyAndValue
+                {
+                    NewPropertySetName = "NewPSet",
+                    NewPropertyName = "NewPName",
+                    CopyFromPropertyName = "Text property",
+                    CopyFromPropertySetName = "Basic set of properties",
+                });
+
+            reader.PatchFile(
+                Path.Combine("TestData", "simple.ifc"),
+                Path.Combine("TestData", "simple_patched.ifc"),
+                automatedChanges);
+
+            var contents = File.ReadAllLines(Path.Combine("TestData", "simple_patched.ifc"));
+
+            Assert.AreEqual(2, contents.Count(x => x.Contains("IFCTEXT('Any arbitrary text you like')")));
+            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("NewPSet")));
+            Assert.IsNotNull(contents.FirstOrDefault(x => x.Contains("NewPName")));
+        }
+
+        [TestMethod]
         public void CanPatchWithBigFilePropertyGroup()
         {
             var reader = new IfcAdapter();

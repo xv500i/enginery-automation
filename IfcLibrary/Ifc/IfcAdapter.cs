@@ -25,73 +25,113 @@ namespace IfcLibrary.Ifc
                 {
                     ApplyAddPropertySetWithPropertyAndValue(model, add);
                 }
+
+                foreach (var add in automatedChanges.AddPropertySetWithRelativePropertyAndValues)
+                {
+                    ApplyAddPropertySetWithRelativePropertyAndValues(model, add);
+                }
                 transaction.Commit();
                 model.SaveAs(patchedPath);
             }
         }
 
+        private void ApplyAddPropertySetWithRelativePropertyAndValues(IfcStore model, AddPropertySetWithRelativePropertyAndValue add)
+        {
+            var allTargetObjects = GetIfcObjects(model);
+            foreach (var ifcObject in allTargetObjects)
+            {
+                var propertySetName = add.NewPropertySetName;
+                var propertyName = add.NewPropertyName;
+
+                // TODO: works only for single value properties
+                var singleValue = ifcObject.GetPropertySingleValue(add.CopyFromPropertySetName, add.CopyFromPropertyName);
+
+                if (singleValue != null)
+                {
+                    var value = singleValue.NominalValue.ToString();
+                    // TODO: lost unit and type information
+                    EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, value);
+                }
+            }
+        }
+
         private static void ApplyAddPropertySetWithPropertyAndValue(IfcStore model, AddPropertySetWithPropertyAndValue add)
         {
-            var allTargetObjects = model.Instances.OfType<IfcObject>()
-                .Where(x =>
-                {
-                    switch(x)
-                    {
-                        //case IIfcWall _:
-                        //case IIfcCableCarrierFitting _:
-                        //case IIfcCableCarrierSegment _:
-                        //case IIfcCableSegment _:
-                        //case IIfcProtectiveDevice _:
-                        //case IIfcElectricDistributionBoard _:
-                        //case IIfcEnergyConversionDevice _:
-                        //case IIfcSwitchingDevice _:
-                        //    return true;
-                        case IIfcDistributionPort _:
-                            // TODO: Da problemas
-                            return false;
-                        case IIfcObject _:
-                            return true;
-                    }
-                    
-                    return false;
-                });
+            var allTargetObjects = GetIfcObjects(model);
 
             foreach (var ifcObject in allTargetObjects)
             {
-                var addPropertySet = ifcObject.PropertySets.FirstOrDefault(x => x.Name == add.NewPropertySetName);
-                if (addPropertySet == null)
-                {
-                    addPropertySet = model.Instances.New<IfcPropertySet>(p =>
-                    {
-                        p.Name = add.NewPropertySetName;
-                    });
-                    var pSetRel = model.Instances.New<IfcRelDefinesByProperties>(r =>
-                    {
-                        r.GlobalId = Guid.NewGuid();
-                        r.RelatingPropertyDefinition = addPropertySet;
-                    });
-                    pSetRel.RelatedObjects.Add(ifcObject);
-                }
+                var propertySetName = add.NewPropertySetName;
+                var propertyName = add.NewPropertyName;
+                var value = add.NewValue;
 
-                var addProperty = addPropertySet.HasProperties.FirstOrDefault(x => x.Name == add.NewPropertyName);
-                if (addProperty == null)
-                {
-                    addProperty = model.Instances.New<IfcPropertySingleValue>(p =>
-                    {
-                        p.Name = add.NewPropertyName;
-                    });
-                    addPropertySet.HasProperties.Add(addProperty);
-                }
-                switch (addProperty)
-                {
-                    case IfcPropertySingleValue ifcPropertySingleValue:
-                        ifcPropertySingleValue.NominalValue = new IfcText(add.NewValue);
-                        break;
-                    case object o:
-                        var a = 1;
-                        break;
-                }
+                EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, new IfcText(value));
             }
+        }
+
+        private static void EnsurePropertySetAndPropertyAndValue(IfcStore model, IfcObject ifcObject, string propertySetName, string propertyName, string value)
+        {
+            var addPropertySet = ifcObject.PropertySets.FirstOrDefault(x => x.Name == propertySetName);
+            if (addPropertySet == null)
+            {
+                addPropertySet = model.Instances.New<IfcPropertySet>(p =>
+                {
+                    p.Name = propertySetName;
+                });
+                var pSetRel = model.Instances.New<IfcRelDefinesByProperties>(r =>
+                {
+                    r.GlobalId = Guid.NewGuid();
+                    r.RelatingPropertyDefinition = addPropertySet;
+                });
+                pSetRel.RelatedObjects.Add(ifcObject);
+            }
+
+            var addProperty = addPropertySet.HasProperties.FirstOrDefault(x => x.Name == propertyName);
+            if (addProperty == null)
+            {
+                addProperty = model.Instances.New<IfcPropertySingleValue>(p =>
+                {
+                    p.Name = propertyName;
+                });
+                addPropertySet.HasProperties.Add(addProperty);
+            }
+            switch (addProperty)
+            {
+                case IfcPropertySingleValue ifcPropertySingleValue:
+                    ifcPropertySingleValue.NominalValue = new IfcText(value);
+                    break;
+                case object o:
+                    var a = 1;
+                    break;
+            }
+        }
+
+        private static System.Collections.Generic.IEnumerable<IfcObject> GetIfcObjects(IfcStore model)
+        {
+            var allTargetObjects = model.Instances.OfType<IfcObject>()
+                            .Where(x =>
+                            {
+                                switch (x)
+                                {
+                                    //case IIfcWall _:
+                                    //case IIfcCableCarrierFitting _:
+                                    //case IIfcCableCarrierSegment _:
+                                    //case IIfcCableSegment _:
+                                    //case IIfcProtectiveDevice _:
+                                    //case IIfcElectricDistributionBoard _:
+                                    //case IIfcEnergyConversionDevice _:
+                                    //case IIfcSwitchingDevice _:
+                                    //    return true;
+                                    case IIfcDistributionPort _:
+                                        // TODO: Da problemas
+                                        return false;
+                                    case IIfcObject _:
+                                        return true;
+                                }
+
+                                return false;
+                            });
+            return allTargetObjects;
         }
 
         private static void ApplyUpdatePropertySetByValue(IfcStore model, UpdatePropertySetByValue update)
