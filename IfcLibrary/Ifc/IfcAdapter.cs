@@ -38,6 +38,15 @@ namespace IfcLibrary.Ifc
 
                                 }
                             }
+                            else
+                            {
+                                propertySet.HasProperties.Add(
+                                    model.Instances.New<IfcPropertySingleValue>(p =>
+                                    {
+                                        p.Name = update.PropertyName;
+                                        p.NominalValue = new IfcText(update.NewValue);
+                                    }));
+                            }
                         }
                     }
                 }
