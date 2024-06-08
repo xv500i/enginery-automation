@@ -16,11 +16,11 @@ namespace IfcLibrary.Ifc
             using (var model = IfcStore.Open(originalPath, null))
             {
                 var transaction = model.BeginTransaction();
+                
                 foreach(var update in  automatedChanges.UpdatePropertySetByValues)
                 {
                     ApplyUpdatePropertySetByValue(model, update);
                 }
-
                 foreach (var add in automatedChanges.AddPropertySetWithPropertyAndValues)
                 {
                     ApplyAddPropertySetWithPropertyAndValue(model, add);
@@ -30,6 +30,7 @@ namespace IfcLibrary.Ifc
                 {
                     ApplyAddPropertySetWithRelativePropertyAndValues(model, add);
                 }
+
                 transaction.Commit();
                 model.SaveAs(patchedPath);
             }
@@ -101,6 +102,7 @@ namespace IfcLibrary.Ifc
                     ifcPropertySingleValue.NominalValue = new IfcText(value);
                     break;
                 case object o:
+                    // TODO: Only works with single value properties
                     var a = 1;
                     break;
             }
@@ -109,28 +111,28 @@ namespace IfcLibrary.Ifc
         private static System.Collections.Generic.IEnumerable<IfcObject> GetIfcObjects(IfcStore model)
         {
             var allTargetObjects = model.Instances.OfType<IfcObject>()
-                            .Where(x =>
-                            {
-                                switch (x)
-                                {
-                                    //case IIfcWall _:
-                                    //case IIfcCableCarrierFitting _:
-                                    //case IIfcCableCarrierSegment _:
-                                    //case IIfcCableSegment _:
-                                    //case IIfcProtectiveDevice _:
-                                    //case IIfcElectricDistributionBoard _:
-                                    //case IIfcEnergyConversionDevice _:
-                                    //case IIfcSwitchingDevice _:
-                                    //    return true;
-                                    case IIfcDistributionPort _:
-                                        // TODO: Da problemas
-                                        return false;
-                                    case IIfcObject _:
-                                        return true;
-                                }
+                .Where(x =>
+                {
+                    switch (x)
+                    {
+                        //case IIfcWall _:
+                        //case IIfcCableCarrierFitting _:
+                        //case IIfcCableCarrierSegment _:
+                        //case IIfcCableSegment _:
+                        //case IIfcProtectiveDevice _:
+                        //case IIfcElectricDistributionBoard _:
+                        //case IIfcEnergyConversionDevice _:
+                        //case IIfcSwitchingDevice _:
+                        //    return true;
+                        case IIfcDistributionPort _:
+                            // TODO: causes items not added on the project when opened with BIMVision
+                            return false;
+                        case IIfcObject _:
+                            return true;
+                    }
 
-                                return false;
-                            });
+                    return false;
+                });
             return allTargetObjects;
         }
 
@@ -138,7 +140,7 @@ namespace IfcLibrary.Ifc
         {
             foreach (var propertySet in model.Instances.OfType<IfcPropertySet>())
             {
-                // What if does not exist
+                // TODO: What if does not exist
                 if (propertySet.Name == update.PropertySetName)
                 {
                     var property = propertySet.HasProperties.FirstOrDefault(x => x.Name == update.PropertyName);
@@ -148,7 +150,7 @@ namespace IfcLibrary.Ifc
                         if (property is IfcPropertySingleValue v)
                         {
                             var type = v.NominalValue.UnderlyingSystemType;
-                            // TODO: respect type
+                            // TODO: type info is lost
                             if (type == typeof(string))
                             {
                                 v.NominalValue = new IfcText(update.NewValue);
