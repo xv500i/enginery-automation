@@ -1,9 +1,10 @@
 ﻿using IfcLibrary.Domain;
+using System.Collections.Generic;
 
 namespace IfcLibrary.Excel
 {
     public interface IExcelReader
     {
-        AutomatedChanges GetAutomatedChanges(string path);
+        List<EntityChangeInfo> GetChanges(string path);
     }
 }

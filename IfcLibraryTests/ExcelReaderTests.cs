@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using IfcLibrary.Excel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using System.Linq;
 
 namespace IfcLibraryTests
@@ -10,52 +9,31 @@ namespace IfcLibraryTests
     public class ExcelReaderTests
     {
         [TestMethod]
-        public void CanReadUpdatePropertySetByValues()
+        public void CanReadFirstEntity()
         {
             var reader = new ExcelReader();
-            var automatedChanges = reader.GetAutomatedChanges(Path.Combine("TestData", "CasoUsoEntrada.xlsx"));
-            var singleUpdatePropertyByValue = automatedChanges.UpdatePropertySetByValues.Single();
-            singleUpdatePropertyByValue.PropertyName.Should().Be("Modelador ");
-            singleUpdatePropertyByValue.PropertySetName.Should().Be("Pset_TeKton3D_Etiquetas");
-            singleUpdatePropertyByValue.NewValue.Should().Be("Aleix");
-        }
+            var entityChangeInfos = reader.GetChanges("Edit.xlsx");
 
-        [TestMethod]
-        public void CanReadAddPropertySetWithPropertyAndValues()
-        {
-            var reader = new ExcelReader();
-            var automatedChanges = reader.GetAutomatedChanges(Path.Combine("TestData", "CasoUsoEntrada.xlsx"));
-            var singleUpdatePropertyByValue = automatedChanges.AddPropertySetWithPropertyAndValues.Single();
-            singleUpdatePropertyByValue.NewPropertyName.Should().Be("00.03.Height");
-            singleUpdatePropertyByValue.NewPropertySetName.Should().Be("00.Quantities");
-            singleUpdatePropertyByValue.NewValue.Should().Be("2");
-        }
+            var firstEntityChange = entityChangeInfos.First(x => x.Identifier == "id: 621429");
+            firstEntityChange
+                .Entity
+                .Should().Be("IfcAirTerminal");
 
-        [TestMethod]
-        public void CanReadAddPropertySetWithRelativePropertyAndValues()
-        {
-            var reader = new ExcelReader();
-            var automatedChanges = reader.GetAutomatedChanges(Path.Combine("TestData", "CasoUsoEntrada.xlsx"));
-            automatedChanges.AddPropertySetWithRelativePropertyAndValues
-                .Should().HaveCount(3);
+            firstEntityChange
+                .PropertyChangeInfos
+                .Should()
+                .HaveCount(16);
 
-            var firstAdd = automatedChanges.AddPropertySetWithRelativePropertyAndValues[0];
-            firstAdd.NewPropertyName.Should().Be("00.01.Length");
-            firstAdd.NewPropertySetName.Should().Be("00.Quantities");
-            firstAdd.CopyFromPropertyName.Should().Be("ICAT-Longitud");
-            firstAdd.CopyFromPropertySetName.Should().Be("ICAT-Geometria");
-
-            var secondAdd = automatedChanges.AddPropertySetWithRelativePropertyAndValues[1];
-            secondAdd.NewPropertyName.Should().Be("00.02.Width");
-            secondAdd.NewPropertySetName.Should().Be("00.Quantities");
-            secondAdd.CopyFromPropertyName.Should().Be("ICAT-Ample");
-            secondAdd.CopyFromPropertySetName.Should().Be("ICAT-Geometria");
-
-            var thirdAdd = automatedChanges.AddPropertySetWithRelativePropertyAndValues[2];
-            thirdAdd.NewPropertyName.Should().Be("01.01.TypeName");
-            thirdAdd.NewPropertySetName.Should().Be("01.Identification");
-            thirdAdd.CopyFromPropertyName.Should().Be("ICAT_02-DescripcioGuBIMclass");
-            thirdAdd.CopyFromPropertySetName.Should().Be("ICAT-Identificacio");
+            firstEntityChange
+                .PropertyChangeInfos
+                .First(x => x.PropertySetName == "00.Quantities" && x.PropertyName == "00.02.Width")
+                .Value
+                .Should().Be("TK_ETQ_Alto");
+            firstEntityChange
+                .PropertyChangeInfos
+                .First(x => x.PropertySetName == "00.Quantities" && x.PropertyName == "00.03.Height")
+                .Value
+                .Should().Be("-");
         }
     }
 }

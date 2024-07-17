@@ -93,7 +93,7 @@ namespace IfcEditor
             try
             {
                 var excelReader = new ExcelReader();
-                var automatedChanges = excelReader.GetAutomatedChanges(this.ExcelFileTextBox.Text);
+                var automatedChanges = excelReader.GetChanges(this.ExcelFileTextBox.Text);
                 
                 var ifcAdapter = new IfcAdapter();
                 ifcAdapter.PatchFile(this.IFCFileTextBox.Text, this.OutputFileTextBox.Text, automatedChanges);

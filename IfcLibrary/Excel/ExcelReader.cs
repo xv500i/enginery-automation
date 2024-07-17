@@ -4,14 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 
 namespace IfcLibrary.Excel
 {
     public class ExcelReader : IExcelReader
     {
-        private const string AddPropertySetHeaderValue = "Property set Nuevo ";
-        private const string UpdatePropertySetHeaderValue = "Property set a cambiar";
+        private const string DataTableName = "Afegir propietats";
+        private const string FirstHeaderFirstColumnName = "Número";
+        private const string FirstHeaderPropertySetColumnName = "00.Quantities";
 
         private List<List<string>> GetCells(string path)
         {
@@ -22,8 +22,7 @@ namespace IfcLibrary.Excel
                 {
                     var result = reader.AsDataSet();
 
-                    // Only one sheet supported
-                    var firstSheet = result.Tables[0];
+                    var firstSheet = result.Tables[DataTableName];
 
                     foreach (DataRow row in firstSheet.Rows)
                     {
@@ -39,139 +38,87 @@ namespace IfcLibrary.Excel
             return results;
         }
 
-        public AutomatedChanges GetAutomatedChanges(string path)
+        public List<EntityChangeInfo> GetChanges(string path)
         {
-            var result = new AutomatedChanges();
-
             try
             {
                 var cells = GetCells(path);
-                result.UpdatePropertySetByValues.AddRange(ParseUpdatePropertySetByValue(cells));
-                result.AddPropertySetWithPropertyAndValues.AddRange(ParseAddPropertySetByValue(cells));
-                result.AddPropertySetWithRelativePropertyAndValues.AddRange(ParseAddPropertySetByRelativeValue(cells));
+                return ParseEntityChangeInfos(cells);
             }
             catch (Exception e)
             {
                 throw new Exception("Could not read excel file", e);
             }
-
-            return result;
         }
 
-        private List<AddPropertySetWithRelativePropertyAndValue> ParseAddPropertySetByRelativeValue(List<List<string>> cells)
+        private List<EntityChangeInfo> ParseEntityChangeInfos(List<List<string>> cells)
         {
-            var addNewPropertySetNameHeader = FindHeaderFor(AddPropertySetHeaderValue, cells);
-            var addNewPropertyNameHeader = new CellIndex
+            var numberHeader = FindHeaderFor(FirstHeaderFirstColumnName, cells);
+            var entityHeader = new CellIndex
             {
-                Row = addNewPropertySetNameHeader.Row,
-                Column = addNewPropertySetNameHeader.Column + 1,
+                Row = numberHeader.Row,
+                Column = numberHeader.Column + 1,
             };
-            var addRelativePropertySetNameHeader = new CellIndex
+            var nameHeader = new CellIndex
             {
-                Row = addNewPropertyNameHeader.Row,
-                Column = addNewPropertyNameHeader.Column + 1,
-            };
-            var addRelativePropertyNameHeader = new CellIndex
-            {
-                Row = addRelativePropertySetNameHeader.Row,
-                Column = addRelativePropertySetNameHeader.Column + 1,
+                Row = entityHeader.Row,
+                Column = entityHeader.Column + 1,
             };
 
-            var headers = new List<CellIndex>
+            var nextColumn = nameHeader.Column + 1;
+            while(nextColumn < cells[nameHeader.Row].Count && cells[nameHeader.Row][nextColumn] != FirstHeaderPropertySetColumnName)
             {
-                addNewPropertySetNameHeader,
-                addNewPropertyNameHeader,
-                addRelativePropertySetNameHeader,
-                addRelativePropertyNameHeader,
-            };
-            return ParseRows(cells, headers, (dictionary) =>
-                new AddPropertySetWithRelativePropertyAndValue
+                nextColumn++;
+            }
+            var propertyInformationHeaders = new List<PropertyInformationHeader>();
+            while(nextColumn < cells[nameHeader.Row].Count && !string.IsNullOrWhiteSpace(cells[nameHeader.Row][nextColumn]))
+            {
+                propertyInformationHeaders.Add(new PropertyInformationHeader
                 {
-                    CopyFromPropertyName = dictionary[addRelativePropertyNameHeader],
-                    NewPropertyName = dictionary[addNewPropertyNameHeader],
-                    NewPropertySetName = dictionary[addNewPropertySetNameHeader],
-                    CopyFromPropertySetName = dictionary[addRelativePropertySetNameHeader],
-                }
-            );
-        }
+                    Column = nextColumn,
+                    PropertySetName = cells[nameHeader.Row][nextColumn],
+                    PropertyName = cells[nameHeader.Row+1][nextColumn],
+                });
+                nextColumn++;
+            }
 
-        private List<AddPropertySetWithPropertyAndValue> ParseAddPropertySetByValue(List<List<string>> cells)
-        {
-            var addNewPropertySetNameHeader = FindHeaderFor(AddPropertySetHeaderValue, cells);
-            var addNewPropertyNameHeader = new CellIndex
+            var excelInfoRows = new List<EntityChangeInfo>();
+            for(var currentRow = entityHeader.Row + 2; currentRow < cells.Count; currentRow++)
             {
-                Row = addNewPropertySetNameHeader.Row,
-                Column = addNewPropertySetNameHeader.Column + 1,
-            };
-            var addNewValueHeader = new CellIndex
-            {
-                Row = addNewPropertyNameHeader.Row,
-                Column = addNewPropertyNameHeader.Column + 3,
-            };
-
-            var headers = new List<CellIndex>
-            {
-                addNewPropertySetNameHeader,
-                addNewPropertyNameHeader,
-                addNewValueHeader,
-            };
-            return ParseRows(cells, headers, (dictionary) =>
-                new AddPropertySetWithPropertyAndValue
+                var entity = cells[currentRow][entityHeader.Column];
+                var identifier = cells[currentRow][nameHeader.Column];
+                if (!string.IsNullOrWhiteSpace(entity) 
+                    && !string.IsNullOrWhiteSpace(identifier))
                 {
-                    NewValue = dictionary[addNewValueHeader],
-                    NewPropertyName = dictionary[addNewPropertyNameHeader],
-                    NewPropertySetName = dictionary[addNewPropertySetNameHeader],
-                }
-            );
-        }
+                    var excelInfoRow = new EntityChangeInfo
+                    {
+                        Entity = entity,
+                        Identifier = identifier,
+                        PropertyChangeInfos = ParsePropertyChangeInfos(cells, propertyInformationHeaders, currentRow),
+                    };
 
-        private List<UpdatePropertySetByValue> ParseUpdatePropertySetByValue(List<List<string>> cells)
-        {
-            var updatePropertySetHeader = FindHeaderFor(UpdatePropertySetHeaderValue, cells);
-            var updateNewPropertyNameHeader = new CellIndex
-            {
-                Row = updatePropertySetHeader.Row,
-                Column = updatePropertySetHeader.Column + 1,
-            };
-            var updateNewPropertyValueHeader = new CellIndex
-            {
-                Row = updateNewPropertyNameHeader.Row,
-                Column = updateNewPropertyNameHeader.Column + 1,
-            };
-
-            var headers = new List<CellIndex>
-            {
-                updatePropertySetHeader,
-                updateNewPropertyNameHeader,
-                updateNewPropertyValueHeader,
-            };
-            return ParseRows(cells, headers, (dictionary) =>
-                new UpdatePropertySetByValue
-                {
-                    NewValue = dictionary[updateNewPropertyValueHeader],
-                    PropertyName = dictionary[updateNewPropertyNameHeader],
-                    PropertySetName = dictionary[updatePropertySetHeader],
-                }
-            );
-        }
-
-        private List<T> ParseRows<T>(List<List<string>> cells, List<CellIndex> headers, Func<Dictionary<CellIndex, string>, T> buildDomainObjectFunc)
-        {
-            var result = new List<T>();
-            for (int row = headers.First().Row + 1; row < cells.Count; row++)
-            {
-                var rowValues = new Dictionary<CellIndex, string>();
-                foreach (var header in headers)
-                {
-                    rowValues[header] = cells[row][header.Column];
-                }
-
-                if (rowValues.Values.All(x => !string.IsNullOrWhiteSpace(x)))
-                {
-                    result.Add(buildDomainObjectFunc(rowValues));
+                    excelInfoRows.Add(excelInfoRow);
                 }
             }
-            return result;
+
+            return excelInfoRows;
+        }
+
+        private List<PropertyChangeInfo> ParsePropertyChangeInfos(List<List<string>> cells, List<PropertyInformationHeader> propertyInformationHeaders, int currentRow)
+        {
+            var changes = new List<PropertyChangeInfo>();
+
+            foreach(var propertyInformationHeader in propertyInformationHeaders)
+            {
+                changes.Add(new PropertyChangeInfo
+                {
+                    Value = cells[currentRow][propertyInformationHeader.Column],
+                    PropertyName = propertyInformationHeader.PropertyName,
+                    PropertySetName = propertyInformationHeader.PropertySetName,
+                });
+            }
+
+            return changes;
         }
 
         private CellIndex FindHeaderFor(string headerName, List<List<string>> cells)

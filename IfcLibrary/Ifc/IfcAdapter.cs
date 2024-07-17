@@ -1,5 +1,6 @@
 ﻿using IfcLibrary.Domain;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xbim.Ifc;
 using Xbim.Ifc4.Interfaces;
@@ -11,61 +12,61 @@ namespace IfcLibrary.Ifc
 {
     public class IfcAdapter : IIfcAdapter
     {
-        public void PatchFile(string originalPath, string patchedPath, AutomatedChanges automatedChanges)
+        public void PatchFile(string originalPath, string patchedPath, List<EntityChangeInfo> entityChangeInfos)
         {
             using (var model = IfcStore.Open(originalPath, null))
             {
                 var transaction = model.BeginTransaction();
                 
-                foreach(var update in  automatedChanges.UpdatePropertySetByValues)
-                {
-                    ApplyUpdatePropertySetByValue(model, update);
-                }
-                foreach (var add in automatedChanges.AddPropertySetWithPropertyAndValues)
-                {
-                    ApplyAddPropertySetWithPropertyAndValue(model, add);
-                }
+                //foreach(var update in  automatedChanges.UpdatePropertySetByValues)
+                //{
+                //    ApplyUpdatePropertySetByValue(model, update);
+                //}
+                //foreach (var add in automatedChanges.AddPropertySetWithPropertyAndValues)
+                //{
+                //    ApplyAddPropertySetWithPropertyAndValue(model, add);
+                //}
 
-                foreach (var add in automatedChanges.AddPropertySetWithRelativePropertyAndValues)
-                {
-                    ApplyAddPropertySetWithRelativePropertyAndValues(model, add);
-                }
+                //foreach (var add in automatedChanges.AddPropertySetWithRelativePropertyAndValues)
+                //{
+                //    ApplyAddPropertySetWithRelativePropertyAndValues(model, add);
+                //}
 
                 transaction.Commit();
                 model.SaveAs(patchedPath);
             }
         }
 
-        private void ApplyAddPropertySetWithRelativePropertyAndValues(IfcStore model, AddPropertySetWithRelativePropertyAndValue add)
-        {
-            var allTargetObjects = GetIfcObjects(model);
-            foreach (var ifcObject in allTargetObjects)
-            {
-                var propertySetName = add.NewPropertySetName;
-                var propertyName = add.NewPropertyName;
+        //private void ApplyAddPropertySetWithRelativePropertyAndValues(IfcStore model, AddPropertySetWithRelativePropertyAndValue add)
+        //{
+        //    var allTargetObjects = GetIfcObjects(model);
+        //    foreach (var ifcObject in allTargetObjects)
+        //    {
+        //        var propertySetName = add.NewPropertySetName;
+        //        var propertyName = add.NewPropertyName;
 
-                // TODO: works only for single value properties
-                var singleValue = ifcObject.GetPropertySingleValue(add.CopyFromPropertySetName, add.CopyFromPropertyName);
+        //        // TODO: works only for single value properties
+        //        var singleValue = ifcObject.GetPropertySingleValue(add.CopyFromPropertySetName, add.CopyFromPropertyName);
 
-                var value = singleValue?.NominalValue?.ToString() ?? string.Empty;
-                // TODO: lost unit and type information
-                EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, value);
-            }
-        }
+        //        var value = singleValue?.NominalValue?.ToString() ?? string.Empty;
+        //        // TODO: lost unit and type information
+        //        EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, value);
+        //    }
+        //}
 
-        private static void ApplyAddPropertySetWithPropertyAndValue(IfcStore model, AddPropertySetWithPropertyAndValue add)
-        {
-            var allTargetObjects = GetIfcObjects(model);
+        //private static void ApplyAddPropertySetWithPropertyAndValue(IfcStore model, AddPropertySetWithPropertyAndValue add)
+        //{
+        //    var allTargetObjects = GetIfcObjects(model);
 
-            foreach (var ifcObject in allTargetObjects)
-            {
-                var propertySetName = add.NewPropertySetName;
-                var propertyName = add.NewPropertyName;
-                var value = add.NewValue;
+        //    foreach (var ifcObject in allTargetObjects)
+        //    {
+        //        var propertySetName = add.NewPropertySetName;
+        //        var propertyName = add.NewPropertyName;
+        //        var value = add.NewValue;
 
-                EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, new IfcText(value));
-            }
-        }
+        //        EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, new IfcText(value));
+        //    }
+        //}
 
         private static void EnsurePropertySetAndPropertyAndValue(IfcStore model, IfcObject ifcObject, string propertySetName, string propertyName, string value)
         {
@@ -133,43 +134,43 @@ namespace IfcLibrary.Ifc
             return allTargetObjects;
         }
 
-        private static void ApplyUpdatePropertySetByValue(IfcStore model, UpdatePropertySetByValue update)
-        {
-            foreach (var propertySet in model.Instances.OfType<IfcPropertySet>())
-            {
-                // TODO: What if does not exist
-                if (propertySet.Name == update.PropertySetName)
-                {
-                    var property = propertySet.HasProperties.FirstOrDefault(x => x.Name == update.PropertyName);
-                    if (property != null)
-                    {
-                        // TODO: implement all possible property types
-                        if (property is IfcPropertySingleValue v)
-                        {
-                            var type = v.NominalValue.UnderlyingSystemType;
-                            // TODO: type info is lost
-                            if (type == typeof(string))
-                            {
-                                v.NominalValue = new IfcText(update.NewValue);
-                            }
-                            else
-                            {
-                                v.NominalValue = new IfcLengthMeasure(update.NewValue);
-                            }
+        //private static void ApplyUpdatePropertySetByValue(IfcStore model, UpdatePropertySetByValue update)
+        //{
+        //    foreach (var propertySet in model.Instances.OfType<IfcPropertySet>())
+        //    {
+        //        // TODO: What if does not exist
+        //        if (propertySet.Name == update.PropertySetName)
+        //        {
+        //            var property = propertySet.HasProperties.FirstOrDefault(x => x.Name == update.PropertyName);
+        //            if (property != null)
+        //            {
+        //                // TODO: implement all possible property types
+        //                if (property is IfcPropertySingleValue v)
+        //                {
+        //                    var type = v.NominalValue.UnderlyingSystemType;
+        //                    // TODO: type info is lost
+        //                    if (type == typeof(string))
+        //                    {
+        //                        v.NominalValue = new IfcText(update.NewValue);
+        //                    }
+        //                    else
+        //                    {
+        //                        v.NominalValue = new IfcLengthMeasure(update.NewValue);
+        //                    }
 
-                        }
-                    }
-                    else
-                    {
-                        propertySet.HasProperties.Add(
-                            model.Instances.New<IfcPropertySingleValue>(p =>
-                            {
-                                p.Name = update.PropertyName;
-                                p.NominalValue = new IfcText(update.NewValue);
-                            }));
-                    }
-                }
-            }
-        }
+        //                }
+        //            }
+        //            else
+        //            {
+        //                propertySet.HasProperties.Add(
+        //                    model.Instances.New<IfcPropertySingleValue>(p =>
+        //                    {
+        //                        p.Name = update.PropertyName;
+        //                        p.NominalValue = new IfcText(update.NewValue);
+        //                    }));
+        //            }
+        //        }
+        //    }
+        //}
     }
 }

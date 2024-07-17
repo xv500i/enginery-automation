@@ -1,9 +1,9 @@
 ﻿namespace IfcLibrary.Domain
 {
-    public class UpdatePropertySetByValue
+    public class PropertyChangeInfo
     {
         public string PropertySetName { get; set; }
         public string PropertyName { get; set; }
-        public string NewValue { get; set; }
+        public string Value { get; set; }
     }
 }
