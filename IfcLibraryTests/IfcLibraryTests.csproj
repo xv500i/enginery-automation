@@ -10,6 +10,15 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.*" />
 		<PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="Xbim.Common" Version="6.0.445" />
+    <PackageReference Include="Xbim.Essentials" Version="6.0.445" />
+    <PackageReference Include="Xbim.Ifc" Version="6.0.445" />
+    <PackageReference Include="Xbim.Ifc2x3" Version="6.0.445" />
+    <PackageReference Include="Xbim.Ifc4" Version="6.0.445" />
+    <PackageReference Include="Xbim.Ifc4x3" Version="6.0.445" />
+    <PackageReference Include="Xbim.IO.Esent" Version="6.0.445" />
+    <PackageReference Include="Xbim.IO.MemoryModel" Version="6.0.445" />
+    <PackageReference Include="Xbim.Tessellator" Version="6.0.445" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Update="Edit.xlsx">
