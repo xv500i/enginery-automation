@@ -47,12 +47,9 @@ namespace IfcLibrary.Ifc
                 // TODO: works only for single value properties
                 var singleValue = ifcObject.GetPropertySingleValue(add.CopyFromPropertySetName, add.CopyFromPropertyName);
 
-                if (singleValue != null)
-                {
-                    var value = singleValue.NominalValue.ToString();
-                    // TODO: lost unit and type information
-                    EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, value);
-                }
+                var value = singleValue?.NominalValue?.ToString() ?? string.Empty;
+                // TODO: lost unit and type information
+                EnsurePropertySetAndPropertyAndValue(model, ifcObject, propertySetName, propertyName, value);
             }
         }
 
