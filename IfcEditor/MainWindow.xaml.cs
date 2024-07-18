@@ -2,6 +2,7 @@
 using IfcLibrary.Ifc;
 using Microsoft.Win32;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace IfcEditor
@@ -76,7 +77,7 @@ namespace IfcEditor
             }
         }
 
-        private void PatchButtonClick(object sender, RoutedEventArgs e)
+        private async void PatchButtonClick(object sender, RoutedEventArgs e)
         {
             if (!File.Exists(this.IFCFileTextBox.Text))
             {
@@ -90,13 +91,11 @@ namespace IfcEditor
                 return;
             }
 
+            this.PatchButton.IsEnabled = false;
+
             try
             {
-                var excelReader = new ExcelReader();
-                var automatedChanges = excelReader.GetChanges(this.ExcelFileTextBox.Text);
-                
-                var ifcAdapter = new IfcAdapter();
-                ifcAdapter.PatchFile(this.IFCFileTextBox.Text, this.OutputFileTextBox.Text, automatedChanges);
+                await PatchAsync(this.ExcelFileTextBox.Text, this.IFCFileTextBox.Text, this.OutputFileTextBox.Text);
 
                 MessageBox.Show($"Fichero modificado guardado en {this.OutputFileTextBox.Text}", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -104,6 +103,22 @@ namespace IfcEditor
             {
                 MessageBox.Show(exception.ToString(), "Ha ocurrido un error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                this.PatchButton.IsEnabled = true;
+            }
+        }
+
+        private async Task PatchAsync(string excel, string inputIfc, string outputIfc)
+        {
+            await Task.Run(() =>
+            {
+                var excelReader = new ExcelReader();
+                var automatedChanges = excelReader.GetChanges(excel);
+
+                var ifcAdapter = new IfcAdapter();
+                ifcAdapter.PatchFile(inputIfc, outputIfc, automatedChanges);
+            });
         }
     }
 }

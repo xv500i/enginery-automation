@@ -45,7 +45,7 @@
             </DockPanel>
         </GroupBox>
 
-        <Button Margin="5" Content="Aplicar cambios" Click="PatchButtonClick" HorizontalAlignment="Right" Width="auto" />
+        <Button x:Name="PatchButton" Margin="5" Content="Aplicar cambios" Click="PatchButtonClick" HorizontalAlignment="Right" Width="auto" />
 
     </StackPanel>
 </Window>
