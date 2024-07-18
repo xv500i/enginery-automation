@@ -48,7 +48,7 @@ namespace IfcLibrary.Ifc
                 {
                     var propertyName = propertyChangeInfo.Value;
 
-                    var ifcPropertySet = entity.PropertySets.First(x => x.HasProperties.Any(y => y.Name == propertyName));
+                    var ifcPropertySet = entity.PropertySets.FirstOrDefault(x => x.HasProperties.Any(y => y.Name == propertyName));
 
                     if (ifcPropertySet == null)
                     {
