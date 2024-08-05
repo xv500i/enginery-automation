@@ -11,7 +11,7 @@ namespace IfcLibrary.Excel
     {
         private const string DataTableName = "Afegir propietats";
         private const string FirstHeaderFirstColumnName = "Número";
-        private const string FirstHeaderPropertySetColumnName = "00.Quantities";
+        private const int FirstHeaderPropertySetColumnIndex = 258;
 
         private List<List<string>> GetCells(string path)
         {
@@ -65,11 +65,7 @@ namespace IfcLibrary.Excel
                 Column = entityHeader.Column + 1,
             };
 
-            var nextColumn = nameHeader.Column + 1;
-            while(nextColumn < cells[nameHeader.Row].Count && cells[nameHeader.Row][nextColumn] != FirstHeaderPropertySetColumnName)
-            {
-                nextColumn++;
-            }
+            var nextColumn = FirstHeaderPropertySetColumnIndex;
             var propertyInformationHeaders = new List<PropertyInformationHeader>();
             while(nextColumn < cells[nameHeader.Row].Count && !string.IsNullOrWhiteSpace(cells[nameHeader.Row][nextColumn]))
             {
