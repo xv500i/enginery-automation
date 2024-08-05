@@ -12,6 +12,7 @@ namespace IfcLibrary.Ifc
     public class IfcAdapter : IIfcAdapter
     {
         private const string NotDefinedValue = "-";
+        private const string NotFoundValue = "NotFound";
 
         public void PatchFile(string originalPath, string patchedPath, List<EntityChangeInfo> entityChangeInfos)
         {
@@ -52,12 +53,12 @@ namespace IfcLibrary.Ifc
 
                     if (ifcPropertySet == null)
                     {
-                        value = NotDefinedValue;
+                        value = NotFoundValue;
                     }
                     else
                     {
                         var singleValue = entity.GetPropertySingleValue(ifcPropertySet.Name, propertyName);
-                        value = singleValue?.NominalValue?.ToString() ?? NotDefinedValue;
+                        value = singleValue?.NominalValue?.ToString() ?? NotFoundValue;
                     }
 
                     EnsurePropertySetAndPropertyAndValue(model, entity, propertyChangeInfo.PropertySetName, propertyChangeInfo.PropertyName, value);
