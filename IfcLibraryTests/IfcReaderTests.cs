@@ -20,22 +20,26 @@ namespace IfcLibraryTests
             var outputFile = "IFC - edifici-patched.ifc";
             var entityIdentifier = "id: 621429";
 
-            adapter.PatchFile("IFC - edifici.ifc", outputFile, new List<EntityChangeInfo> 
+            adapter.PatchFile("IFC - edifici.ifc", outputFile, new IfcManipulations
             {
-                new EntityChangeInfo
+                EntityChanges = new List<EntityChange>
                 {
-                    Entity = "no importa",
-                    Identifier = entityIdentifier,
-                    PropertyChangeInfos = new List<PropertyChangeInfo>
+                    new EntityChange
                     {
-                        new PropertyChangeInfo
+                        Entity = "no importa",
+                        Identifier = entityIdentifier,
+                        PropertyChanges = new List<PropertyChange>
                         {
-                            PropertyName = "00.01.Length",
-                            PropertySetName = "00.Quantities",
-                            Value = "TK_ETQ_Ancho",
+                            new PropertyChange
+                            {
+                                PropertyName = "00.01.Length",
+                                PropertySetName = "00.Quantities",
+                                Value = "TK_ETQ_Ancho",
+                            }
                         }
                     }
-                }
+                },
+                PropertySetCleanups = null,
             });
 
             using (var model = IfcStore.Open(outputFile, null))

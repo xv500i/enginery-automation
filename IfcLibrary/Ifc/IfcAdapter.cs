@@ -14,13 +14,13 @@ namespace IfcLibrary.Ifc
         private const string NotDefinedValue = "-";
         private const string NotFoundValue = "NotFound";
 
-        public void PatchFile(string originalPath, string patchedPath, List<EntityChangeInfo> entityChangeInfos)
+        public void PatchFile(string originalPath, string patchedPath, IfcManipulations ifcManipulations)
         {
             using (var model = IfcStore.Open(originalPath, null))
             {
                 var transaction = model.BeginTransaction();
 
-                foreach (var entityChangeInfo in entityChangeInfos) 
+                foreach (var entityChangeInfo in ifcManipulations.EntityChanges) 
                 {
                     ApplyEntityChangeInfo(model, entityChangeInfo);
                 }
@@ -30,7 +30,7 @@ namespace IfcLibrary.Ifc
             }
         }
 
-        private void ApplyEntityChangeInfo(IfcStore model, EntityChangeInfo entityChangeInfo)
+        private void ApplyEntityChangeInfo(IfcStore model, EntityChange entityChangeInfo)
         {
             var entity = model.Instances.OfType<IfcObject>().Where(x => x.Name == entityChangeInfo.Identifier).FirstOrDefault();
             if (entity == null)
@@ -38,7 +38,7 @@ namespace IfcLibrary.Ifc
                 return;
             }
 
-            foreach(var propertyChangeInfo in entityChangeInfo.PropertyChangeInfos)
+            foreach(var propertyChangeInfo in entityChangeInfo.PropertyChanges)
             {
                 var value = string.Empty;
                 if (string.IsNullOrWhiteSpace(propertyChangeInfo.Value) || value == NotDefinedValue)

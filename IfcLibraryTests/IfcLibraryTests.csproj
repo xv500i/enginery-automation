@@ -21,7 +21,7 @@
     <PackageReference Include="Xbim.Tessellator" Version="6.0.445" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Update="Edit.xlsx">
+	  <None Update="IFC - Editor ASB.xlsx">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	  <None Update="IFC - edifici.ifc">
