@@ -5,24 +5,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 
 namespace IfcLibrary.Excel
 {
     public class ExcelReader : IExcelReader
     {
-        private const string EntityChangesDataTableName = "Afegir propietats";
-        private const string PropertySetCleanupDataTableName = "Borrar propietats";
-        private const string FirstHeaderFirstColumnName = "Número";
-        private const string PropertySetCleanupFirstHeaderFirstColumnName = "Property Sets";
-
         public IfcManipulations GetChanges(string path)
         {
             try
             {
                 var sheets = GetCells(path);
-                var entityChanges = ParseEntityChangeInfos(sheets.First(x => x.Name == EntityChangesDataTableName).Cells);
-                var propertySetCleanups = ParsePropertySetCleanups(sheets.First(x => x.Name == PropertySetCleanupDataTableName).Cells);
+                var entityChanges = ParseEntityChangeInfos(sheets.First(x => x.Name == SheetNames.EntityChangesDataTableName).Cells);
+                var propertySetCleanups = ParsePropertySetCleanups(sheets.First(x => x.Name == SheetNames.PropertySetCleanupDataTableName).Cells);
                 return new IfcManipulations
                 {
                     EntityChanges = entityChanges,
@@ -44,10 +38,10 @@ namespace IfcLibrary.Excel
                 {
                     var dataSet = reader.AsDataSet();
 
-                    var entityChangesSheet = ReadSheet(dataSet, EntityChangesDataTableName);
+                    var entityChangesSheet = ReadSheet(dataSet, SheetNames.EntityChangesDataTableName);
                     sheets.Add(entityChangesSheet);
 
-                    var propertySetCleanupSheet = ReadSheet(dataSet, PropertySetCleanupDataTableName);
+                    var propertySetCleanupSheet = ReadSheet(dataSet, SheetNames.PropertySetCleanupDataTableName);
                     sheets.Add(propertySetCleanupSheet);
                 }
             }
@@ -57,7 +51,7 @@ namespace IfcLibrary.Excel
         private static Sheet ReadSheet(DataSet dataSet, string name)
         {
             var cells = new List<List<string>>();
-            var dataTable = dataSet.Tables[EntityChangesDataTableName];
+            var dataTable = dataSet.Tables[SheetNames.EntityChangesDataTableName];
             foreach (DataRow row in dataTable.Rows)
             {
                 var rowAsList = new List<string>();
@@ -77,7 +71,7 @@ namespace IfcLibrary.Excel
 
         private List<PropertySetCleanup> ParsePropertySetCleanups(List<List<string>> cells)
         {
-            var propertySetHeader = FindHeaderFor(PropertySetCleanupFirstHeaderFirstColumnName, cells);
+            var propertySetHeader = FindHeaderFor(HeaderCellValues.PropertySetHeader, cells);
             var currentColumn = propertySetHeader.Column + 1;
             var propertySetRow = propertySetHeader.Row;
             var propertyRow = propertySetRow + 1;
@@ -112,43 +106,30 @@ namespace IfcLibrary.Excel
 
         private List<EntityChange> ParseEntityChangeInfos(List<List<string>> cells)
         {
-            var numberHeader = FindHeaderFor(FirstHeaderFirstColumnName, cells);
-            var entityHeader = new CellIndex
-            {
-                Row = numberHeader.Row,
-                Column = numberHeader.Column + 1,
-            };
-            var nameHeader = new CellIndex
-            {
-                Row = entityHeader.Row,
-                Column = entityHeader.Column + 1,
-            };
-
-            var propertySetHeader = FindHeaderFor(PropertySetCleanupFirstHeaderFirstColumnName, cells);
+            var propertySetHeader = FindHeaderFor(HeaderCellValues.PropertySetHeader, cells);
             var nextColumn = propertySetHeader.Column + 1;
             var propertyInformationHeaders = new List<PropertyInformationHeader>();
-            while(nextColumn < cells[nameHeader.Row].Count && !string.IsNullOrWhiteSpace(cells[nameHeader.Row][nextColumn]))
+            while(nextColumn < cells[propertySetHeader.Row].Count && !string.IsNullOrWhiteSpace(cells[propertySetHeader.Row][nextColumn]))
             {
                 propertyInformationHeaders.Add(new PropertyInformationHeader
                 {
                     Column = nextColumn,
-                    PropertySetName = cells[nameHeader.Row][nextColumn],
-                    PropertyName = cells[nameHeader.Row+1][nextColumn],
+                    PropertySetName = cells[propertySetHeader.Row][nextColumn],
+                    PropertyName = cells[propertySetHeader.Row+1][nextColumn],
                 });
                 nextColumn++;
             }
 
+            var guidHeader = FindHeaderFor(HeaderCellValues.Guid, cells);
+
             var excelInfoRows = new List<EntityChange>();
-            for(var currentRow = entityHeader.Row + 2; currentRow < cells.Count; currentRow++)
+            for(var currentRow = guidHeader.Row + 3; currentRow < cells.Count; currentRow++)
             {
-                var entity = cells[currentRow][entityHeader.Column];
-                var identifier = cells[currentRow][nameHeader.Column];
-                if (!string.IsNullOrWhiteSpace(entity) 
-                    && !string.IsNullOrWhiteSpace(identifier))
+                var identifier = cells[currentRow][guidHeader.Column];
+                if (!string.IsNullOrWhiteSpace(identifier))
                 {
                     var excelInfoRow = new EntityChange
                     {
-                        Entity = entity,
                         Identifier = identifier,
                         PropertyChanges = ParsePropertyChangeInfos(cells, propertyInformationHeaders, currentRow),
                     };

@@ -15,10 +15,7 @@ namespace IfcLibraryTests
             var reader = new ExcelReader();
             var manipulations = reader.GetChanges(TestFileNames.InputExcel);
 
-            var firstEntityChange = manipulations.EntityChanges.First(x => x.Identifier == "id: 621429");
-            firstEntityChange
-                .Entity
-                .Should().Be("IfcAirTerminal");
+            var firstEntityChange = manipulations.EntityChanges.First(x => x.Identifier == "1nsLFSbor8AQdQO784RL3r");
 
             firstEntityChange
                 .PropertyChanges

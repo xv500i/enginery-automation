@@ -26,7 +26,6 @@ namespace IfcLibraryTests
                 {
                     new EntityChange
                     {
-                        Entity = "no importa",
                         Identifier = entityIdentifier,
                         PropertyChanges = new List<PropertyChange>
                         {
