@@ -1,6 +1,7 @@
 ﻿using IfcLibrary.Domain;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Xbim.Ifc;
 using Xbim.Ifc4.Kernel;
@@ -16,32 +17,109 @@ namespace IfcLibrary.Ifc
 
         public void PatchFile(string originalPath, string patchedPath, IfcManipulations ifcManipulations)
         {
+            var currentTmpPath = GetTempIfcFile();
             using (var model = IfcStore.Open(originalPath, null))
             {
-                var transaction = model.BeginTransaction();
-
-                foreach (var entityChangeInfo in ifcManipulations.EntityChanges) 
+                using (var transaction = model.BeginTransaction())
                 {
-                    ApplyEntityChangeInfo(model, entityChangeInfo);
+                    foreach (var entityChangeInfo in ifcManipulations.EntityChanges)
+                    {
+                        ApplyEntityChangeInfo(model, entityChangeInfo);
+                    }
+
+                    transaction.Commit();
                 }
-                
-                transaction.Commit();
+                model.SaveAs(currentTmpPath);
+            }
+
+            using (var model = IfcStore.Open(currentTmpPath, null))
+            {
+                for (int i = 0; i < ifcManipulations.EntityChanges.Count; i++)
+                {
+                    var entityChangeInfo = ifcManipulations.EntityChanges[i];
+                    using (var transaction = model.BeginTransaction())
+                    {
+                        try
+                        {
+                            Cleanup(model, entityChangeInfo, ifcManipulations.PropertySetCleanups);
+                            transaction.Commit();
+                        }
+                        catch (NullReferenceException)
+                        {
+                            transaction.RollBack();
+                        }
+                    }
+                }
+
                 model.SaveAs(patchedPath);
             }
+
+            File.Delete(currentTmpPath);
         }
 
-        private void ApplyEntityChangeInfo(IfcStore model, EntityChange entityChangeInfo)
+        private static string GetTempIfcFile()
         {
-            var entity = model.Instances.OfType<IfcObject>().Where(x => x.Name == entityChangeInfo.Identifier).FirstOrDefault();
+            return Path.GetTempPath() + Guid.NewGuid().ToString() + ".ifc";
+        }
+
+        private void Cleanup(IfcStore model, EntityChange entityChangeInfo, List<PropertySetCleanup> propertySetCleanups)
+        {
+            var entity = model.Instances.OfType<IfcObject>().Where(x => x.GlobalId == entityChangeInfo.Identifier).FirstOrDefault();
             if (entity == null)
             {
                 return;
             }
 
-            foreach(var propertyChangeInfo in entityChangeInfo.PropertyChanges)
+            IEnumerable<IfcRelDefinesByProperties> relations = entity.IsDefinedBy.OfType<IfcRelDefinesByProperties>();
+            var propertySets = new List<IfcPropertySet>();
+            foreach (IfcRelDefinesByProperties rel in relations)
             {
-                var value = string.Empty;
-                if (string.IsNullOrWhiteSpace(propertyChangeInfo.Value) || value == NotDefinedValue)
+                IfcPropertySet pSet = rel.RelatingPropertyDefinition as IfcPropertySet;
+                if (rel.RelatingPropertyDefinition is IfcPropertySet a)
+                {
+                    propertySets.Add(pSet);
+                }
+                
+            }
+
+            //var propertySets = entity.PropertySets.ToList();
+            foreach (var propertySet in propertySets)
+            {
+                var missingProperties = propertySet.HasProperties.Count;
+                foreach (var property in propertySet.HasProperties.ToList())
+                {
+                    if (propertySetCleanups.Any(x =>
+                        x.PropertySetName == propertySet.Name
+                        && x.PropertyNamesToKeep.Contains(property.Name)))
+                    {
+
+                    }
+                    else
+                    {
+                        model.Delete(property);
+                        missingProperties--;
+                    }
+                }
+
+                if (missingProperties <= 0)
+                {
+                    model.Delete(propertySet);
+                }
+            }
+        }
+
+        private void ApplyEntityChangeInfo(IfcStore model, EntityChange entityChangeInfo)
+        {
+            var entity = model.Instances.OfType<IfcObject>().Where(x => x.GlobalId == entityChangeInfo.Identifier).FirstOrDefault();
+            if (entity == null)
+            {
+                return;
+            }
+
+            foreach (var propertyChangeInfo in entityChangeInfo.PropertyChanges)
+            {
+                var value = propertyChangeInfo.Value;
+                if (string.IsNullOrWhiteSpace(value) || value == NotDefinedValue)
                 {
                     value = NotDefinedValue;
                 }
@@ -60,9 +138,9 @@ namespace IfcLibrary.Ifc
                         var singleValue = entity.GetPropertySingleValue(ifcPropertySet.Name, propertyName);
                         value = singleValue?.NominalValue?.ToString() ?? NotFoundValue;
                     }
-
-                    EnsurePropertySetAndPropertyAndValue(model, entity, propertyChangeInfo.PropertySetName, propertyChangeInfo.PropertyName, value);
                 }
+
+                EnsurePropertySetAndPropertyAndValue(model, entity, propertyChangeInfo.PropertySetName, propertyChangeInfo.PropertyName, value);
             }
         }
 
