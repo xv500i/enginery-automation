@@ -16,7 +16,7 @@ namespace IfcEditor
         {
             InitializeComponent();
             var version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
-            this.Title = $"Enginery IFC Automation v{version.Major}.{version.Minor}.{version.MinorRevision}";
+            this.Title = $"Enginery IFC Automation v{version.Major}.{version.Minor}.{version.Build}";
         }
 
         private void AboutClick(object sender, RoutedEventArgs e)
