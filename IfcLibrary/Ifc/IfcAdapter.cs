@@ -15,8 +15,16 @@ namespace IfcLibrary.Ifc
         private const string NotDefinedValue = "-";
         private const string NotFoundValue = "NotFound";
 
+        public event EventHandler<PatchProgress> PatchProgressUpdated;
+
         public void PatchFile(string originalPath, string patchedPath, IfcManipulations ifcManipulations)
         {
+            var totalEntityChanges = ifcManipulations.EntityChanges.Count;
+            var completedEntityChanges = 0;
+            var totalCleanups = ifcManipulations.EntityChanges.Count;
+            var completedCleanups = 0;
+            var totalItems = totalCleanups + totalEntityChanges;
+
             var currentTmpPath = GetTempIfcFile();
             using (var model = IfcStore.Open(originalPath, null))
             {
@@ -25,6 +33,12 @@ namespace IfcLibrary.Ifc
                     foreach (var entityChangeInfo in ifcManipulations.EntityChanges)
                     {
                         ApplyEntityChangeInfo(model, entityChangeInfo);
+                        completedEntityChanges++;
+                        this.PatchProgressUpdated?.Invoke(this, new PatchProgress
+                        {
+                            PercentComplete = 100 * (double)(completedCleanups + completedEntityChanges) / totalItems,
+                            Text = $"Actualizando propiedades en {completedEntityChanges} de {totalEntityChanges} entidades.",
+                        });
                     }
 
                     transaction.Commit();
@@ -49,6 +63,12 @@ namespace IfcLibrary.Ifc
                             transaction.RollBack();
                         }
                     }
+                    completedCleanups++;
+                    this.PatchProgressUpdated?.Invoke(this, new PatchProgress
+                    {
+                        PercentComplete = 100 * (double)(completedCleanups + completedEntityChanges) / totalItems,
+                        Text = $"Eliminando propiedades en {completedCleanups} de {totalCleanups} entidades.",
+                    });
                 }
 
                 model.SaveAs(patchedPath);

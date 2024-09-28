@@ -25,10 +25,10 @@
             </MenuItem>
         </Menu>
         <GroupBox Header="Selecciona el fichero IFC" Style="{StaticResource GroupBoxStyle}">
-                <DockPanel>
-                    <Button DockPanel.Dock="Left" Content="Editar" Click="IFCButtonClick"/>
-                    <TextBox Name="IFCFileTextBox" IsReadOnly="True"></TextBox>
-                </DockPanel>
+            <DockPanel>
+                <Button DockPanel.Dock="Left" Content="Editar" Click="IFCButtonClick"/>
+                <TextBox Name="IFCFileTextBox" IsReadOnly="True"></TextBox>
+            </DockPanel>
         </GroupBox>
 
         <GroupBox Header="Selecciona el fichero excel" Style="{StaticResource GroupBoxStyle}">
@@ -44,6 +44,11 @@
                 <TextBox Name="OutputFileTextBox" IsReadOnly="True"></TextBox>
             </DockPanel>
         </GroupBox>
+
+        <StackPanel x:Name="ProgressGroup" Visibility="Collapsed">
+            <TextBlock x:Name="ProgressText" Margin="5" />
+            <ProgressBar x:Name="ProgressBar" Maximum="100" Minimum="0" Value="0" Height="10" Margin="5" />
+        </StackPanel>
 
         <Button x:Name="PatchButton" Margin="5" Content="Aplicar cambios" Click="PatchButtonClick" HorizontalAlignment="Right" Width="auto" />
 

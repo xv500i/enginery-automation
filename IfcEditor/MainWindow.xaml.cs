@@ -1,6 +1,7 @@
 ﻿using IfcLibrary.Excel;
 using IfcLibrary.Ifc;
 using Microsoft.Win32;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,11 +13,16 @@ namespace IfcEditor
     /// </summary>
     public partial class MainWindow : Window
     {
+        private ExcelReader excelReader;
+        private IIfcAdapter ifcAdapter;
+
         public MainWindow()
         {
             InitializeComponent();
             var version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
             this.Title = $"Enginery IFC Automation v{version.Major}.{version.Minor}.{version.Build}";
+            this.excelReader = new ExcelReader();
+            this.ifcAdapter = new IfcAdapter();
         }
 
         private void AboutClick(object sender, RoutedEventArgs e)
@@ -95,6 +101,10 @@ namespace IfcEditor
 
             try
             {
+                this.ProgressBar.Value = 0;
+                this.ProgressText.Text = string.Empty;
+                this.ifcAdapter.PatchProgressUpdated += IfcAdapter_PatchProgressUpdated;
+                this.ProgressGroup.Visibility = Visibility.Visible;
                 await PatchAsync(this.ExcelFileTextBox.Text, this.IFCFileTextBox.Text, this.OutputFileTextBox.Text);
 
                 MessageBox.Show($"Fichero modificado guardado en {this.OutputFileTextBox.Text}", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -105,19 +115,32 @@ namespace IfcEditor
             }
             finally
             {
+                this.ProgressGroup.Visibility = Visibility.Collapsed;
+                this.ifcAdapter.PatchProgressUpdated -= IfcAdapter_PatchProgressUpdated;
                 this.PatchButton.IsEnabled = true;
             }
+        }
+
+        private void IfcAdapter_PatchProgressUpdated(object sender, PatchProgress e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                this.ProgressBar.Value = e.PercentComplete;
+                this.ProgressText.Text = e.Text;
+            }));
         }
 
         private async Task PatchAsync(string excel, string inputIfc, string outputIfc)
         {
             await Task.Run(() =>
             {
-                var excelReader = new ExcelReader();
-                var automatedChanges = excelReader.GetChanges(excel);
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    this.ProgressText.Text = "Leyendo excel";
+                }));
+                var automatedChanges = this.excelReader.GetChanges(excel);
 
-                var ifcAdapter = new IfcAdapter();
-                ifcAdapter.PatchFile(inputIfc, outputIfc, automatedChanges);
+                this.ifcAdapter.PatchFile(inputIfc, outputIfc, automatedChanges);
             });
         }
     }
