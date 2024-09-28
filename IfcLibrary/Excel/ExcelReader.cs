@@ -51,7 +51,7 @@ namespace IfcLibrary.Excel
         private static Sheet ReadSheet(DataSet dataSet, string name)
         {
             var cells = new List<List<string>>();
-            var dataTable = dataSet.Tables[SheetNames.EntityChangesDataTableName];
+            var dataTable = dataSet.Tables[name];
             foreach (DataRow row in dataTable.Rows)
             {
                 var rowAsList = new List<string>();
@@ -71,25 +71,24 @@ namespace IfcLibrary.Excel
 
         private List<PropertySetCleanup> ParsePropertySetCleanups(List<List<string>> cells)
         {
-            var propertySetHeader = FindHeaderFor(HeaderCellValues.PropertySetHeader, cells);
-            var currentColumn = propertySetHeader.Column + 1;
-            var propertySetRow = propertySetHeader.Row;
-            var propertyRow = propertySetRow + 1;
+            var propertySetHeader = FindHeaderFor(HeaderCellValues.PropertySetHeaderCleanup, cells);
+            var propertyHeader = FindHeaderFor(HeaderCellValues.PropertyHeaderCleanup, cells);
 
             var propertySetCleanups = new Dictionary<string, List<string>>();
 
-            while (currentColumn < cells[propertySetRow].Count && !string.IsNullOrWhiteSpace(cells[propertySetRow][currentColumn]))
+            for (int i = propertySetHeader.Row + 1; i < cells.Count; i++)
             {
-                var propertySetName = cells[propertySetRow][currentColumn];
-                var propertyName = cells[propertyRow][currentColumn];
+                var propertySetName = cells[i][propertySetHeader.Column];
+                var propertyName = cells[i][propertyHeader.Column];
 
-                if (!propertySetCleanups.ContainsKey(propertySetName))
+                if (!string.IsNullOrWhiteSpace(propertyName) && !string.IsNullOrWhiteSpace(propertySetName))
                 {
-                    propertySetCleanups[propertySetName] = new List<string>();
+                    if (!propertySetCleanups.ContainsKey(propertySetName))
+                    {
+                        propertySetCleanups[propertySetName] = new List<string>();
+                    }
+                    propertySetCleanups[propertySetName].Add(propertyName);
                 }
-                propertySetCleanups[propertySetName].Add(propertyName);
-
-                currentColumn++;
             }
 
             var result = new List<PropertySetCleanup>();

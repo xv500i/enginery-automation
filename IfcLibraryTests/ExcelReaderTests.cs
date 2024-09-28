@@ -26,25 +26,25 @@ namespace IfcLibraryTests
                 .PropertyChanges
                 .First(x => x.PropertySetName == "00.Quantities" && x.PropertyName == "00.01.Length")
                 .Value
-                .Should().Be("TK_ETQ_Ancho");
+                .Should().Be("-");
 
             firstEntityChange
                 .PropertyChanges
                 .First(x => x.PropertySetName == "00.Quantities" && x.PropertyName == "00.02.Width")
                 .Value
-                .Should().Be("TK_ETQ_Alto");
+                .Should().Be("TK_ETQ_Ancho");
 
             firstEntityChange
                 .PropertyChanges
                 .First(x => x.PropertySetName == "00.Quantities" && x.PropertyName == "00.03.Height")
                 .Value
-                .Should().Be("-");
+                .Should().Be("TK_ETQ_Alto");
 
             firstEntityChange
                 .PropertyChanges
                 .First(x => x.PropertySetName == "02.Phasing" && x.PropertyName == "02.02.PhaseDemolished")
                 .Value
-                .Should().Be("");
+                .Should().Be("-");
         }
 
         [TestMethod]

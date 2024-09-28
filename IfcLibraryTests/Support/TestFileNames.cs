@@ -2,6 +2,6 @@
 {
     internal static class TestFileNames
     {
-        public static string InputExcel = "IFC - Editor ASB.xlsx";
+        public static string InputExcel = "IFC - Editor IFC_BIR.xlsx";
     }
 }
